@@ -3,6 +3,7 @@
 #include "math.h"
 #include "crypto.h"
 #include "validInput.h"
+#include "uint128.h"
 
 using namespace std;
 

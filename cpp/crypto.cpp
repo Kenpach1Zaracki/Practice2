@@ -1,44 +1,68 @@
 #include "crypto.h"
 #include "math.h"
 #include "validInput.h"
+#include "uint128.h"
 #include <iostream>
 #include <random>
 
-static int genPrime(int min, int max) {
+// Проверка простоты для __uint128_t (через int, т.к. используется для генерации p в диапазоне int)
+static bool isPrime128(__uint128_t n) {
+    if (n < 2) return false;
+    if (n == 2) return true;
+    if (n % 2 == 0) return false;
+    for (uint64_t d = 3; d * d <= n; d += 2)
+        if (n % d == 0) return false;
+    return true;
+}
+
+// Генерация большого простого (можно доработать! Сейчас до 64 бита из-за ограничений rand)
+static __uint128_t genPrime128(__uint128_t min, __uint128_t max) {
     std::random_device rd;
-    std::mt19937 gen(rd());
-    std::uniform_int_distribution<int> distrib(min | 1, max);
-    int p;
+    std::mt19937_64 gen(rd());
+    std::uniform_int_distribution<uint64_t> distrib((uint64_t)min | 1, (uint64_t)max);
+    __uint128_t p;
     do {
         p = distrib(gen);
-    } while (!isPrime(p));
+    } while (!isPrime128(p));
     return p;
 }
 
-static int genSecret(int p) {
+static __uint128_t genSecret128(__uint128_t p) {
     std::random_device rd;
-    std::mt19937 gen(rd());
-    std::uniform_int_distribution<int> distrib(2, p - 2);
+    std::mt19937_64 gen(rd());
+    std::uniform_int_distribution<uint64_t> distrib(2, (uint64_t)p - 2);
     return distrib(gen);
+}
+
+// Быстрое возведение в степень по модулю для __uint128_t
+__uint128_t powmod128(__uint128_t base, __uint128_t exp, __uint128_t mod) {
+    __uint128_t res = 1;
+    base %= mod;
+    while (exp > 0) {
+        if (exp & 1) res = (res * base) % mod;
+        base = (base * base) % mod;
+        exp >>= 1;
+    }
+    return res;
 }
 
 // Диффи-Хеллман простой (без файла)
 void taskDiffieHellman() {
     using namespace std;
-    cout << "--- Протокол Диффи-Хеллмана ---\n";
-    int p = genPrime(10000, 50000);
+    cout << "--- Протокол Диффи-Хеллмана (uint128) ---\n";
+    __uint128_t p = genPrime128(1000000000000000ULL, 1000000000001000ULL); // пример диапазона
     cout << "Генерируем простое p: " << p << endl;
-    int g = genPrime(2, p - 1);
+    __uint128_t g = genPrime128(2, p - 1);
     cout << "Генерируем первообразный корень g: " << g << endl;
-    int a = genSecret(p), b = genSecret(p);
+    __uint128_t a = genSecret128(p), b = genSecret128(p);
     cout << "Секрет Алисы a: " << a << endl;
     cout << "Секрет Боба b: " << b << endl;
-    int A = powmod(g, a, p); // публичный Алисы
-    int B = powmod(g, b, p); // публичный Боба
+    __uint128_t A = powmod128(g, a, p); // публичный Алисы
+    __uint128_t B = powmod128(g, b, p); // публичный Боба
     cout << "Открытый Алисы (A): " << A << endl;
     cout << "Открытый Боба (B): " << B << endl;
-    int kA = powmod(B, a, p); // общий ключ у Алисы
-    int kB = powmod(A, b, p); // общий ключ у Боба
+    __uint128_t kA = powmod128(B, a, p); // общий ключ у Алисы
+    __uint128_t kB = powmod128(A, b, p); // общий ключ у Боба
     cout << "Общий ключ у Алисы: " << kA << endl;
     cout << "Общий ключ у Боба: " << kB << endl;
     cout << (kA == kB ? "Ключи совпали!\n" : "Ошибка: ключи различны!\n");
@@ -47,37 +71,37 @@ void taskDiffieHellman() {
 // MITM-атака на Диффи-Хеллман (эмуляция)
 void taskDiffieHellmanMITM() {
     using namespace std;
-    cout << "--- MITM атака на Диффи-Хеллман ---\n";
-    int p = genPrime(10000, 50000);
-    int g = genPrime(2, p - 1);
+    cout << "--- MITM атака на Диффи-Хеллман (uint128) ---\n";
+    __uint128_t p = genPrime128(1000000000000000ULL, 1000000000001000ULL);
+    __uint128_t g = genPrime128(2, p - 1);
     cout << "p: " << p << "\ng: " << g << endl;
 
     // Алиса
-    int alice_secret = genSecret(p);
-    int alice_pub = powmod(g, alice_secret, p);
+    __uint128_t alice_secret = genSecret128(p);
+    __uint128_t alice_pub = powmod128(g, alice_secret, p);
 
     // Боб
-    int bob_secret = genSecret(p);
-    int bob_pub = powmod(g, bob_secret, p);
+    __uint128_t bob_secret = genSecret128(p);
+    __uint128_t bob_pub = powmod128(g, bob_secret, p);
 
     // Мэллори (злоумышленник)
-    int mallory_secret = genSecret(p);
-    int mallory_pub = powmod(g, mallory_secret, p);
+    __uint128_t mallory_secret = genSecret128(p);
+    __uint128_t mallory_pub = powmod128(g, mallory_secret, p);
 
-    cout << "Алиса отправляет A (на самом деле Бобу передает Mallory): " << alice_pub << endl;
-    cout << "Боб отправляет B (на самом деле Алисе передает Mallory): " << bob_pub << endl;
+    cout << "Алиса отправляет A (на самом деле Mallory): " << alice_pub << endl;
+    cout << "Боб отправляет B (на самом деле Mallory): " << bob_pub << endl;
 
     // Mallory подменяет публичные ключи
-    int fakeA = mallory_pub;
-    int fakeB = mallory_pub;
+    __uint128_t fakeA = mallory_pub;
+    __uint128_t fakeB = mallory_pub;
 
     // Алиса вычисляет "общий" ключ с Mallory
-    int alice_shared = powmod(fakeB, alice_secret, p);
+    __uint128_t alice_shared = powmod128(fakeB, alice_secret, p);
     // Боб вычисляет "общий" ключ с Mallory
-    int bob_shared = powmod(fakeA, bob_secret, p);
+    __uint128_t bob_shared = powmod128(fakeA, bob_secret, p);
     // Mallory знает оба секрета
-    int mallory_alice = powmod(alice_pub, mallory_secret, p);
-    int mallory_bob = powmod(bob_pub, mallory_secret, p);
+    __uint128_t mallory_alice = powmod128(alice_pub, mallory_secret, p);
+    __uint128_t mallory_bob = powmod128(bob_pub, mallory_secret, p);
 
     cout << "Общий ключ (Алиса): " << alice_shared << "\n";
     cout << "Общий ключ (Боб):   " << bob_shared << "\n";
