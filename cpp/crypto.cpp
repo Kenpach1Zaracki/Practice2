@@ -5,7 +5,7 @@
 #include <iostream>
 #include <random>
 
-// Проверка простоты для __uint128_t (через int, т.к. используется для генерации p в диапазоне int)
+// Проверка простоты для __uint128_t 
 static bool isPrime128(__uint128_t n) {
     if (n < 2) return false;
     if (n == 2) return true;
@@ -15,7 +15,7 @@ static bool isPrime128(__uint128_t n) {
     return true;
 }
 
-// Генерация большого простого (можно доработать! Сейчас до 64 бита из-за ограничений rand)
+// Генерация большого простого 
 static __uint128_t genPrime128(__uint128_t min, __uint128_t max) {
     std::random_device rd;
     std::mt19937_64 gen(rd());
@@ -46,7 +46,7 @@ __uint128_t powmod128(__uint128_t base, __uint128_t exp, __uint128_t mod) {
     return res;
 }
 
-// Диффи-Хеллман простой (без файла)
+// Диффи-Хеллман
 void taskDiffieHellman() {
     using namespace std;
     cout << "--- Протокол Диффи-Хеллмана (uint128) ---\n";
@@ -68,7 +68,7 @@ void taskDiffieHellman() {
     cout << (kA == kB ? "Ключи совпали!\n" : "Ошибка: ключи различны!\n");
 }
 
-// MITM-атака на Диффи-Хеллман (эмуляция)
+// MITM-атака на Диффи-Хеллман 
 void taskDiffieHellmanMITM() {
     using namespace std;
     cout << "--- MITM атака на Диффи-Хеллман (uint128) ---\n";

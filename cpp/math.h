@@ -22,7 +22,6 @@ std::vector<int> continuedFraction(int a, int b);
 // Диофантово уравнение для 143a + 169b = 5 (твой вариант)
 bool solveDiophantine(int a, int b, int c, int &x, int &y);
 
-// Задания-обёртки для main.cpp
 void taskFermatPower();
 void taskExtendedEuclidUV();
 void taskModularInverse();

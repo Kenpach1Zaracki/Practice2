@@ -3,7 +3,7 @@
 #include <cmath>
 #include <vector>
 
-// Проверка простоты (обычный перебор)
+// Проверка простоты
 bool isPrime(int n) {
     if (n < 2) return false;
     if (n == 2) return true;
@@ -13,7 +13,7 @@ bool isPrime(int n) {
     return true;
 }
 
-// Быстрое возведение в степень по модулю (через двоичное разложение)
+// Быстрое возведение в степень по модулю
 int powmod(int base, int exp, int mod) {
     int res = 1;
     base %= mod;

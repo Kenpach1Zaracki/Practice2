@@ -18,7 +18,7 @@ public class CryptoUtils {
         return 2 + rand.nextInt(p - 3);
     }
 
-    // Диффи-Хеллман (без MITM)
+    // Диффи-Хеллман 
     public static void taskDiffieHellman() {
         System.out.println("--- Диффи-Хеллман ---");
         int p = genPrime(10000, 50000);
