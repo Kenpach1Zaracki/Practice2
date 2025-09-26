@@ -35,7 +35,7 @@ public class MathUtils {
         return a;
     }
 
-    // Расширенный алгоритм Евклида (находит u,v)
+    // Расширенный алгоритм Евклида (находит u,v) — используется для других заданий
     public static int extendedEuclid(int a, int b, int[] uv) {
         if (b == 0) {
             uv[0] = 1; uv[1] = 0;
@@ -68,18 +68,38 @@ public class MathUtils {
         return res;
     }
 
-    // Решение диофантова уравнения ax + by = c
+    // Получение коэффициентов x, y из цепной дроби (reverse process)
+    public static void getCoefficientsFromCF(List<Integer> cf, int[] xy) {
+        int n = cf.size();
+        int pPrev = 0, pCurr = 1;
+        int qPrev = 1, qCurr = 0;
+        for (int i = 0; i < n; ++i) {
+            int pNext = cf.get(i) * pCurr + pPrev;
+            int qNext = cf.get(i) * qCurr + qPrev;
+            pPrev = pCurr; pCurr = pNext;
+            qPrev = qCurr; qCurr = qNext;
+        }
+        xy[0] = (n % 2 == 0) ? pPrev : -pPrev;
+        xy[1] = (n % 2 == 1) ? qPrev : -qPrev;
+    }
+
+    // Решение диофантова уравнения через цепную дробь!
     public static boolean solveDiophantine(int a, int b, int c, int[] xy) {
-        int g = extendedEuclid(Math.abs(a), Math.abs(b), xy);
+        int g = gcd(Math.abs(a), Math.abs(b));
         if (c % g != 0) return false;
-        xy[0] *= c / g;
-        xy[1] *= c / g;
-        if (a < 0) xy[0] = -xy[0];
-        if (b < 0) xy[1] = -xy[1];
+        int a1 = a / g;
+        int b1 = b / g;
+        int c1 = c / g;
+        List<Integer> cf = continuedFraction(Math.abs(a1), Math.abs(b1));
+        int[] xy0 = new int[2];
+        getCoefficientsFromCF(cf, xy0);
+        if (a1 < 0) xy0[0] = -xy0[0];
+        if (b1 < 0) xy0[1] = -xy0[1];
+        xy[0] = xy0[0] * c1;
+        xy[1] = xy0[1] * c1;
         return true;
     }
 
-    // ---- ЗАДАНИЯ ----
 
     public static void taskPowMod(Scanner sc) {
         System.out.print("a: "); int a = InputUtils.readInt(sc);
@@ -122,6 +142,7 @@ public class MathUtils {
         if (solveDiophantine(a, b, c, xy)) {
             System.out.println("Решение уравнения: " + a + "*x + " + b + "*y = " + c);
             System.out.println("x = " + xy[0] + ", y = " + xy[1]);
+            System.out.println(a + "*" + xy[0] + " + " + b + "*" + xy[1] + " = " + (a * xy[0] + b * xy[1]));
         } else {
             System.out.println("Нет целых решений!");
         }
