@@ -19,7 +19,7 @@ int modInverse(int a, int m);
 // Цепная дробь
 std::vector<int> continuedFraction(int a, int b);
 
-// Диофантово уравнение для 143a + 169b = 5 (твой вариант)
+// Диофантово уравнение для 143a + 169b = 5
 bool solveDiophantine(int a, int b, int c, int &x, int &y);
 
 void taskFermatPower();

@@ -51,7 +51,6 @@ void taskDiffieHellman() {
     using namespace std;
     cout << "--- Протокол Диффи-Хеллмана (uint128) ---\n";
     __uint128_t p = genPrime128(1000000000000000ULL, 1000000000001000ULL); // пример диапазона
-    cout << "Генерируем простое p: " << p << endl;
     __uint128_t g = genPrime128(2, p - 1);
     cout << "Генерируем первообразный корень g: " << g << endl;
     __uint128_t a = genSecret128(p), b = genSecret128(p);

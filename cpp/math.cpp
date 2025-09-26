@@ -56,7 +56,6 @@ int modInverse(int a, int m) {
     return (x % m + m) % m;
 }
 
-// Цепная дробь (a/b)
 std::vector<int> continuedFraction(int a, int b) {
     std::vector<int> cf;
     while (b != 0) {
@@ -68,14 +67,40 @@ std::vector<int> continuedFraction(int a, int b) {
     return cf;
 }
 
-// Решение диофантова уравнения (ax + by = c)
+// Получаем коэффициенты x, y через обратный ход цепной дроби
+void getCoefficientsFromCF(const std::vector<int>& cf, int& x, int& y) {
+    int n = cf.size();
+    int p_prev = 0, p_curr = 1;
+    int q_prev = 1, q_curr = 0;
+
+    for (int i = 0; i < n; ++i) {
+        int p_next = cf[i] * p_curr + p_prev;
+        int q_next = cf[i] * q_curr + q_prev;
+        p_prev = p_curr; p_curr = p_next;
+        q_prev = q_curr; q_curr = q_next;
+    }
+    
+    x = (n % 2 == 0) ? p_prev : -p_prev;
+    y = (n % 2 == 1) ? q_prev : -q_prev;
+}
+
+// Решение диофантова уравнения
 bool solveDiophantine(int a, int b, int c, int &x, int &y) {
-    int g = extendedEuclid(abs(a), abs(b), x, y);
+    int g = gcd(abs(a), abs(b));
     if (c % g != 0) return false;
-    x *= c / g;
-    y *= c / g;
-    if (a < 0) x = -x;
-    if (b < 0) y = -y;
+    int a1 = a / g;
+    int b1 = b / g;
+    int c1 = c / g;
+
+    auto cf = continuedFraction(abs(a1), abs(b1));
+    int x0, y0;
+    getCoefficientsFromCF(cf, x0, y0);
+
+    if (a1 < 0) x0 = -x0;
+    if (b1 < 0) y0 = -y0;
+
+    x = x0 * c1;
+    y = y0 * c1;
     return true;
 }
 
@@ -132,7 +157,7 @@ void taskModularInverse() {
 // Задание 5: цепная дробь и диофантово уравнение
 void taskContinuedFractionAndDiophantine() {
     using namespace std;
-    cout << "Цепная дробь и диофантово уравнение для 143a + 169b = 5\n";
+    cout << "Цепная дробь и диофантово уравнение для 143x + 169y = 5\n";
     int a = 143, b = 169, c = 5;
     cout << "Цепная дробь для (" << a << "/" << b << "): ";
     auto cf = continuedFraction(a, b);
@@ -143,8 +168,8 @@ void taskContinuedFractionAndDiophantine() {
     cout << endl;
     int x, y;
     if (solveDiophantine(a, b, c, x, y)) {
-        cout << "Решение уравнения " << a << "a + " << b << "b = " << c << ":\n";
-        cout << "a = " << x << ", b = " << y << endl;
+        cout << "Решение уравнения " << a << "x + " << b << "y = " << c << ":\n";
+        cout << "x = " << x << ", y = " << y << endl;
         cout << a << "*" << x << " + " << b << "*" << y << " = " << a * x + b * y << endl;
     } else {
         cout << "Нет целых решений!\n";
